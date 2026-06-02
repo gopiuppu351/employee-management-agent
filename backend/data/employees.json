@@ -1,0 +1,5 @@
+[
+  {"id": "E001", "name": "Alice Johnson", "role": "engineer", "manager_id": "M001", "department": "Engineering"},
+  {"id": "E002", "name": "Carol Davis",   "role": "engineer", "manager_id": "M001", "department": "Engineering"},
+  {"id": "M001", "name": "Bob Smith",     "role": "manager",  "manager_id": null,   "department": "Engineering"}
+]

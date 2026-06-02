@@ -1,0 +1,5 @@
+[
+  {"employee_id": "E001", "base_salary": 90000, "currency": "USD", "last_updated": "2026-01-01"},
+  {"employee_id": "E002", "base_salary": 85000, "currency": "USD", "last_updated": "2026-01-01"},
+  {"employee_id": "M001", "base_salary": 130000, "currency": "USD", "last_updated": "2026-01-01"}
+]
