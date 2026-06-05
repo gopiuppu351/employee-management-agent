@@ -1,3 +1,19 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --brand-primary: #4f46e5;   /* indigo-600 */
+  --brand-dark:    #312e81;   /* indigo-900 */
+  --surface:       #f8f7ff;   /* very light indigo tint */
+}
+
+body {
+  background-color: var(--surface);
+}
+
+/* Subtle card top-accent helper */
+.card-accent-indigo  { border-top: 3px solid #4f46e5; }
+.card-accent-emerald { border-top: 3px solid #059669; }
+.card-accent-amber   { border-top: 3px solid #d97706; }
+.card-accent-violet  { border-top: 3px solid #7c3aed; }

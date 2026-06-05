@@ -50,28 +50,32 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100vh - 120px)" }}>
-      <h1 className="text-2xl font-bold mb-4 text-gray-800">HR Assistant</h1>
+      <h1 className="text-2xl font-bold mb-4 text-indigo-900">HR Assistant</h1>
 
       <div className="flex flex-wrap gap-2 mb-3">
         {SUGGESTIONS.map((s) => (
-          <button key={s} onClick={() => sendMessage(s)} className="text-xs bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3 py-1 hover:bg-blue-100 transition">
+          <button key={s} onClick={() => sendMessage(s)} className="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-full px-3 py-1.5 hover:bg-indigo-100 transition font-medium">
             {s}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 border rounded-xl p-4 bg-white shadow-sm">
+      <div className="flex-1 overflow-y-auto space-y-3 border border-indigo-100 rounded-xl p-4 bg-white shadow-sm">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] p-3 rounded-xl text-sm whitespace-pre-wrap ${m.role === "user" ? "bg-blue-600 text-white rounded-br-none" : "bg-gray-100 text-gray-800 rounded-bl-none"}`}>
-              <span className="block font-semibold mb-1 text-xs opacity-70">{m.role === "user" ? "You" : "HR Agent"}</span>
+            <div className={`max-w-[80%] p-3 rounded-xl text-sm whitespace-pre-wrap ${
+              m.role === "user"
+                ? "text-white rounded-br-none shadow-sm"
+                : "bg-slate-100 text-slate-800 rounded-bl-none"
+            }`} style={m.role === "user" ? { background: "linear-gradient(135deg, #4f46e5, #6366f1)" } : {}}>
+              <span className="block font-semibold mb-1 text-xs opacity-60">{m.role === "user" ? "You" : "HR Agent"}</span>
               {m.text}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-500 p-3 rounded-xl text-sm rounded-bl-none animate-pulse">Thinking...</div>
+            <div className="bg-slate-100 text-slate-500 p-3 rounded-xl text-sm rounded-bl-none animate-pulse">Thinking...</div>
           </div>
         )}
         <div ref={bottomRef} />
@@ -79,7 +83,7 @@ export default function ChatPage() {
 
       <div className="flex gap-2 mt-4">
         <input
-          className="flex-1 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          className="flex-1 border border-indigo-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -89,7 +93,8 @@ export default function ChatPage() {
         <button
           onClick={() => sendMessage()}
           disabled={loading}
-          className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          className="text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition shadow-sm"
+          style={{ background: "linear-gradient(135deg, #4f46e5, #6366f1)" }}
         >
           Send
         </button>

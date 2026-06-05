@@ -37,33 +37,33 @@ export default function SalaryPage() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Salary Information</h1>
+      <h1 className="text-2xl font-bold text-indigo-900 mb-6">Salary Information</h1>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <p className="text-sm text-gray-500 mb-4">
+      <div className="card-accent-amber bg-white rounded-xl shadow-sm border border-amber-100 p-6">
+        <p className="text-sm text-slate-500 mb-5">
           View your current compensation details. Access is restricted — only you or your manager can see this information.
         </p>
-        <button onClick={fetchSalary} disabled={loading} className="bg-yellow-500 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-600 disabled:opacity-50 transition mb-6">
+        <button onClick={fetchSalary} disabled={loading} className="bg-amber-500 text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 transition mb-6 shadow-sm">
           {loading ? "Loading..." : "View My Salary"}
         </button>
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
 
         {salary && (
-          <div className="border rounded-xl p-5 bg-yellow-50 space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-600">Employee ID</span>
-              <span className="text-sm font-bold text-gray-800">{salary.employee_id}</span>
+          <div className="rounded-xl p-5 space-y-4" style={{ background: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", border: "1px solid #fcd34d" }}>
+            <div className="flex justify-between items-center pb-3 border-b border-amber-200">
+              <span className="text-sm font-medium text-slate-600">Employee ID</span>
+              <span className="text-sm font-bold text-slate-800 bg-white px-2 py-0.5 rounded-md border border-amber-200">{salary.employee_id}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-600">Base Salary</span>
-              <span className="text-2xl font-bold text-yellow-700">
+            <div className="flex justify-between items-center pb-3 border-b border-amber-200">
+              <span className="text-sm font-medium text-slate-600">Base Salary</span>
+              <span className="text-2xl font-bold text-amber-700">
                 {salary.currency} {salary.base_salary.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-gray-600">Last Updated</span>
-              <span className="text-sm text-gray-500">{salary.last_updated}</span>
+              <span className="text-sm font-medium text-slate-600">Last Updated</span>
+              <span className="text-sm text-slate-500">{salary.last_updated}</span>
             </div>
           </div>
         )}
