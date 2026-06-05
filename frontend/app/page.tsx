@@ -1,3 +1,4 @@
+// Dashboard: main entry point for the Employee Management Agent
 export default function Dashboard() {
   return (
     <div className="max-w-4xl mx-auto">
