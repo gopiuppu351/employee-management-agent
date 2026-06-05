@@ -8,9 +8,9 @@ interface Message {
 
 const SUGGESTIONS = [
   "What is my current salary?",
-  "I'd like to apply for leave from June 10 to June 14.",
+  "Apply for leave June 10–14.",
   "What is the leave policy?",
-  "Can you tell me about the remote work policy?",
+  "Tell me about remote work policy.",
   "List all pending leave requests.",
 ];
 
@@ -43,39 +43,39 @@ export default function ChatPage() {
       const reply = res.ok ? data.reply : (data.detail ?? "An error occurred.");
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", text: "Could not reach the backend. Make sure the API server is running on port 8000." }]);
+      setMessages((prev) => [...prev, { role: "assistant", text: "Could not reach the backend." }]);
     }
     setLoading(false);
   }
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100vh - 120px)" }}>
-      <h1 className="text-2xl font-bold mb-4 text-white">HR Assistant</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-4">HR Assistant</h1>
 
       <div className="flex flex-wrap gap-2 mb-3">
         {SUGGESTIONS.map((s) => (
-          <button key={s} onClick={() => sendMessage(s)} className="text-xs text-teal-300 rounded-full px-3 py-1.5 transition font-medium hover:text-white" style={{ background: "rgba(13,148,136,0.15)", border: "1px solid rgba(13,148,136,0.3)" }}>
+          <button key={s} onClick={() => sendMessage(s)} className="text-xs bg-white border border-gray-200 text-gray-500 rounded-full px-3 py-1.5 hover:border-sky-300 hover:text-sky-600 transition">
             {s}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 rounded-2xl p-4" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
+      <div className="flex-1 overflow-y-auto space-y-3 border border-gray-100 rounded-xl p-4 bg-white shadow-sm">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] p-3 rounded-xl text-sm whitespace-pre-wrap`}
-              style={m.role === "user"
-                ? { background: "linear-gradient(135deg, #0d9488, #0f766e)", color: "white", borderBottomRightRadius: 0 }
-                : { background: "#0f172a", color: "#cbd5e1", border: "1px solid #334155", borderBottomLeftRadius: 0 }
-              }>
-              <span className="block font-semibold mb-1 text-xs opacity-50">{m.role === "user" ? "You" : "HR Agent"}</span>
+            <div className={`max-w-[80%] p-3 rounded-xl text-sm whitespace-pre-wrap ${
+              m.role === "user"
+                ? "bg-sky-500 text-white rounded-br-none"
+                : "bg-gray-100 text-gray-700 rounded-bl-none"
+            }`}>
+              <span className="block font-medium mb-1 text-xs opacity-60">{m.role === "user" ? "You" : "HR Agent"}</span>
               {m.text}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="p-3 rounded-xl text-sm animate-pulse" style={{ background: "#0f172a", color: "#64748b", border: "1px solid #334155" }}>Thinking...</div>
+            <div className="bg-gray-100 text-gray-400 p-3 rounded-xl text-sm rounded-bl-none animate-pulse">Thinking...</div>
           </div>
         )}
         <div ref={bottomRef} />
@@ -83,8 +83,7 @@ export default function ChatPage() {
 
       <div className="flex gap-2 mt-4">
         <input
-          className="flex-1 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-          style={{ background: "var(--surface-card)", border: "1px solid #334155" }}
+          className="flex-1 border border-gray-200 rounded-lg px-4 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-sky-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -94,8 +93,7 @@ export default function ChatPage() {
         <button
           onClick={() => sendMessage()}
           disabled={loading}
-          className="text-white px-5 py-2 rounded-lg text-sm font-semibold disabled:opacity-50 transition"
-          style={{ background: "linear-gradient(135deg, #0d9488, #0f766e)" }}
+          className="bg-sky-500 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-sky-600 disabled:opacity-50 transition"
         >
           Send
         </button>

@@ -32,35 +32,31 @@ export default function PoliciesPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">Company Policies</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Company Policies</h1>
       <div className="flex gap-5">
-        <div className="w-52 shrink-0 space-y-2">
+        <div className="w-48 shrink-0 space-y-1.5">
           {policies.map((p) => (
             <button
               key={p}
               onClick={() => loadPolicy(p)}
-              className={`w-full text-left text-sm px-4 py-2.5 rounded-xl transition font-medium ${
+              className={`w-full text-left text-sm px-4 py-2.5 rounded-lg transition font-medium ${
                 selected === p
-                  ? "text-white"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-violet-500 text-white"
+                  : "bg-white border border-gray-100 text-gray-600 hover:bg-violet-50 hover:text-violet-600"
               }`}
-              style={selected === p
-                ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", border: "1px solid #7c3aed" }
-                : { background: "var(--surface-card)", border: "1px solid #334155" }
-              }
             >
               {POLICY_LABELS[p] ?? p}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 rounded-2xl p-6 min-h-[300px]" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
-          {!selected && <p className="text-slate-500 text-sm">Select a policy from the left to view its contents.</p>}
-          {selected && loading && <p className="text-slate-500 text-sm animate-pulse">Loading policy...</p>}
+        <div className="card-accent-lilac flex-1 bg-white rounded-xl border border-gray-100 shadow-sm p-6 min-h-[300px]">
+          {!selected && <p className="text-gray-300 text-sm">Select a policy from the left.</p>}
+          {selected && loading && <p className="text-gray-400 text-sm animate-pulse">Loading...</p>}
           {selected && !loading && (
             <>
-              <h2 className="text-lg font-semibold text-violet-400 mb-4">{POLICY_LABELS[selected] ?? selected}</h2>
-              <p className="text-slate-300 text-sm leading-relaxed">{content}</p>
+              <h2 className="text-base font-semibold text-violet-600 mb-3">{POLICY_LABELS[selected] ?? selected}</h2>
+              <p className="text-gray-600 text-sm leading-relaxed">{content}</p>
             </>
           )}
         </div>

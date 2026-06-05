@@ -3,11 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --surface-bg:   #0f172a;   /* slate-900 */
-  --surface-card: #1e293b;   /* slate-800 */
-  --surface-nav:  #020617;   /* slate-950 */
+  --surface-bg:   #f9fafb;
+  --card-border:  #e5e7eb;
 }
 
 body {
   background-color: var(--surface-bg);
+  color: #111827;
 }
+
+.card-accent-sky    { border-top: 3px solid #38bdf8; }
+.card-accent-mint   { border-top: 3px solid #34d399; }
+.card-accent-peach  { border-top: 3px solid #fb923c; }
+.card-accent-lilac  { border-top: 3px solid #a78bfa; }

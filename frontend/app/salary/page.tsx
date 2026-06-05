@@ -37,33 +37,35 @@ export default function SalaryPage() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">Salary Information</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Salary Information</h1>
 
-      <div className="rounded-2xl p-6" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
-        <p className="text-sm text-slate-400 mb-5">
-          View your current compensation details. Access is restricted — only you or your manager can see this information.
+      <div className="card-accent-peach bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <p className="text-sm text-gray-400 mb-5">
+          Access is restricted — only you or your manager can view this information.
         </p>
-        <button onClick={fetchSalary} disabled={loading} className="px-6 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition mb-6" style={{ background: "linear-gradient(135deg, #d97706, #b45309)" }}>
+        <button onClick={fetchSalary} disabled={loading} className="bg-orange-400 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-orange-500 disabled:opacity-50 transition mb-6">
           {loading ? "Loading..." : "View My Salary"}
         </button>
 
-        {error && <p className="text-rose-400 text-sm rounded-lg px-3 py-2" style={{ background: "rgba(225,29,72,0.1)", border: "1px solid rgba(225,29,72,0.3)" }}>{error}</p>}
+        {error && (
+          <p className="text-red-500 text-sm bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+        )}
 
         {salary && (
-          <div className="rounded-xl p-5 space-y-4" style={{ background: "linear-gradient(135deg, #1c1408, #271a08)", border: "1px solid #92400e" }}>
-            <div className="flex justify-between items-center pb-3" style={{ borderBottom: "1px solid #44300a" }}>
-              <span className="text-sm font-medium text-amber-400">Employee ID</span>
-              <span className="text-sm font-bold text-white px-2 py-0.5 rounded-md" style={{ background: "#0f172a", border: "1px solid #44300a" }}>{salary.employee_id}</span>
+          <div className="rounded-xl border border-orange-100 bg-orange-50 p-5 space-y-4">
+            <div className="flex justify-between items-center pb-3 border-b border-orange-100">
+              <span className="text-sm text-gray-500">Employee ID</span>
+              <span className="text-sm font-semibold text-gray-700 bg-white px-2 py-0.5 rounded border border-orange-100">{salary.employee_id}</span>
             </div>
-            <div className="flex justify-between items-center pb-3" style={{ borderBottom: "1px solid #44300a" }}>
-              <span className="text-sm font-medium text-amber-400">Base Salary</span>
-              <span className="text-2xl font-bold text-amber-300">
+            <div className="flex justify-between items-center pb-3 border-b border-orange-100">
+              <span className="text-sm text-gray-500">Base Salary</span>
+              <span className="text-2xl font-semibold text-orange-500">
                 {salary.currency} {salary.base_salary.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-amber-400">Last Updated</span>
-              <span className="text-sm text-slate-400">{salary.last_updated}</span>
+              <span className="text-sm text-gray-500">Last Updated</span>
+              <span className="text-sm text-gray-400">{salary.last_updated}</span>
             </div>
           </div>
         )}

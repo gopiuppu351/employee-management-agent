@@ -54,53 +54,53 @@ export default function LeavesPage() {
   }
 
   const statusColor: Record<string, string> = {
-    pending:  "bg-amber-500 bg-opacity-20 text-amber-300 border border-amber-500 border-opacity-30",
-    approved: "bg-teal-500 bg-opacity-20 text-teal-300 border border-teal-500 border-opacity-30",
-    rejected: "bg-rose-500 bg-opacity-20 text-rose-300 border border-rose-500 border-opacity-30",
+    pending:  "bg-amber-50 text-amber-600 border border-amber-200",
+    approved: "bg-emerald-50 text-emerald-600 border border-emerald-200",
+    rejected: "bg-red-50 text-red-500 border border-red-200",
   };
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-white mb-6">Leave Requests</h1>
+      <h1 className="text-2xl font-semibold text-gray-900 mb-6">Leave Requests</h1>
 
-      <div className="rounded-2xl p-6 mb-6" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
-        <h2 className="text-lg font-semibold mb-4 text-teal-400">Apply for Leave</h2>
+      <div className="card-accent-mint bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-6">
+        <h2 className="text-base font-semibold mb-4 text-gray-700">Apply for Leave</h2>
         <form onSubmit={submitLeave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">Start Date</label>
-              <input type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500" style={{ background: "#0f172a", border: "1px solid #334155" }} />
+              <label className="block text-sm font-medium text-gray-500 mb-1">Start Date</label>
+              <input type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-300" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-1">End Date</label>
-              <input type="date" required value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500" style={{ background: "#0f172a", border: "1px solid #334155" }} />
+              <label className="block text-sm font-medium text-gray-500 mb-1">End Date</label>
+              <input type="date" required value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-300" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Reason</label>
-            <textarea required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={3} className="w-full rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-teal-500" style={{ background: "#0f172a", border: "1px solid #334155" }} placeholder="Reason for leave..." />
+            <label className="block text-sm font-medium text-gray-500 mb-1">Reason</label>
+            <textarea required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={3} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-300" placeholder="Reason for leave..." />
           </div>
-          <button type="submit" disabled={loading} className="px-6 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50 transition" style={{ background: "linear-gradient(135deg, #0d9488, #0f766e)" }}>
+          <button type="submit" disabled={loading} className="bg-emerald-500 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-emerald-600 disabled:opacity-50 transition">
             {loading ? "Submitting..." : "Submit Request"}
           </button>
-          {msg && <p className="text-sm mt-2 text-teal-400 font-medium">{msg}</p>}
+          {msg && <p className="text-sm mt-2 text-emerald-600">{msg}</p>}
         </form>
       </div>
 
-      <div className="rounded-2xl p-6" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
-        <h2 className="text-lg font-semibold mb-4 text-slate-200">My Leave History</h2>
+      <div className="card-accent-sky bg-white rounded-xl border border-gray-100 shadow-sm p-6">
+        <h2 className="text-base font-semibold mb-4 text-gray-700">My Leave History</h2>
         {leaves.length === 0 ? (
-          <p className="text-slate-500 text-sm">No leave requests found.</p>
+          <p className="text-gray-400 text-sm">No leave requests found.</p>
         ) : (
           <div className="space-y-3">
             {leaves.map((l) => (
-              <div key={l.id} className="rounded-xl p-4 flex justify-between items-start transition-colors" style={{ background: "#0f172a", border: "1px solid #334155" }}>
+              <div key={l.id} className="border border-gray-100 rounded-lg p-4 flex justify-between items-start hover:bg-gray-50 transition-colors">
                 <div>
-                  <p className="font-medium text-slate-200 text-sm">{l.reason}</p>
-                  <p className="text-xs text-slate-500 mt-1">{l.start_date} → {l.end_date}</p>
-                  <p className="text-xs text-slate-600">ID: {l.id}</p>
+                  <p className="font-medium text-gray-800 text-sm">{l.reason}</p>
+                  <p className="text-xs text-gray-400 mt-1">{l.start_date} → {l.end_date}</p>
+                  <p className="text-xs text-gray-300">ID: {l.id}</p>
                 </div>
-                <span className={`text-xs font-semibold px-2 py-1 rounded-full ${statusColor[l.status] ?? "bg-slate-700 text-slate-400"}`}>
+                <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColor[l.status] ?? "bg-gray-100 text-gray-500"}`}>
                   {l.status}
                 </span>
               </div>
