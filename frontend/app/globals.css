@@ -3,16 +3,15 @@
 @tailwind utilities;
 
 :root {
-  --surface-bg:   #f9fafb;
-  --card-border:  #e5e7eb;
+  --surface-bg: #f5f4f2;
 }
 
 body {
   background-color: var(--surface-bg);
-  color: #111827;
+  color: #1c1917;
 }
 
-.card-accent-sky    { border-top: 3px solid #38bdf8; }
-.card-accent-mint   { border-top: 3px solid #34d399; }
-.card-accent-peach  { border-top: 3px solid #fb923c; }
-.card-accent-lilac  { border-top: 3px solid #a78bfa; }
+.card-accent-coral  { border-top: 3px solid #f97066; }
+.card-accent-sage   { border-top: 3px solid #4ade80; }
+.card-accent-gold   { border-top: 3px solid #fbbf24; }
+.card-accent-rose   { border-top: 3px solid #fb7185; }
