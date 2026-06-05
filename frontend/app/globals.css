@@ -3,17 +3,11 @@
 @tailwind utilities;
 
 :root {
-  --brand-primary: #4f46e5;   /* indigo-600 */
-  --brand-dark:    #312e81;   /* indigo-900 */
-  --surface:       #f8f7ff;   /* very light indigo tint */
+  --surface-bg:   #0f172a;   /* slate-900 */
+  --surface-card: #1e293b;   /* slate-800 */
+  --surface-nav:  #020617;   /* slate-950 */
 }
 
 body {
-  background-color: var(--surface);
+  background-color: var(--surface-bg);
 }
-
-/* Subtle card top-accent helper */
-.card-accent-indigo  { border-top: 3px solid #4f46e5; }
-.card-accent-emerald { border-top: 3px solid #059669; }
-.card-accent-amber   { border-top: 3px solid #d97706; }
-.card-accent-violet  { border-top: 3px solid #7c3aed; }

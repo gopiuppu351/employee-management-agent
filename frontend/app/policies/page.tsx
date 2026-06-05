@@ -32,31 +32,35 @@ export default function PoliciesPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-indigo-900 mb-6">Company Policies</h1>
-      <div className="flex gap-6">
+      <h1 className="text-2xl font-bold text-white mb-6">Company Policies</h1>
+      <div className="flex gap-5">
         <div className="w-52 shrink-0 space-y-2">
           {policies.map((p) => (
             <button
               key={p}
               onClick={() => loadPolicy(p)}
-              className={`w-full text-left text-sm px-4 py-2.5 rounded-lg transition font-medium ${
+              className={`w-full text-left text-sm px-4 py-2.5 rounded-xl transition font-medium ${
                 selected === p
-                  ? "bg-violet-600 text-white shadow-sm"
-                  : "bg-white border border-violet-100 text-slate-700 hover:bg-violet-50 hover:border-violet-300"
+                  ? "text-white"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
+              style={selected === p
+                ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", border: "1px solid #7c3aed" }
+                : { background: "var(--surface-card)", border: "1px solid #334155" }
+              }
             >
               {POLICY_LABELS[p] ?? p}
             </button>
           ))}
         </div>
 
-        <div className="card-accent-violet flex-1 bg-white rounded-xl shadow-sm border border-violet-100 p-6 min-h-[300px]">
-          {!selected && <p className="text-slate-400 text-sm">Select a policy from the left to view its contents.</p>}
-          {selected && loading && <p className="text-slate-400 text-sm animate-pulse">Loading policy...</p>}
+        <div className="flex-1 rounded-2xl p-6 min-h-[300px]" style={{ background: "var(--surface-card)", border: "1px solid #334155" }}>
+          {!selected && <p className="text-slate-500 text-sm">Select a policy from the left to view its contents.</p>}
+          {selected && loading && <p className="text-slate-500 text-sm animate-pulse">Loading policy...</p>}
           {selected && !loading && (
             <>
-              <h2 className="text-lg font-semibold text-violet-700 mb-4">{POLICY_LABELS[selected] ?? selected}</h2>
-              <p className="text-slate-700 text-sm leading-relaxed">{content}</p>
+              <h2 className="text-lg font-semibold text-violet-400 mb-4">{POLICY_LABELS[selected] ?? selected}</h2>
+              <p className="text-slate-300 text-sm leading-relaxed">{content}</p>
             </>
           )}
         </div>
