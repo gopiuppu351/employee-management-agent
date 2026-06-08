@@ -13,7 +13,7 @@ export default function LeaveForm({ employeeId, onSuccess }: LeaveFormProps) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("Submitting...");
-    const res = await fetch("http://localhost:8000/api/leaves/", {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaves/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ employee_id: employeeId, ...form }),

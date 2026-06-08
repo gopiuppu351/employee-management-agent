@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const API = "http://localhost:8000/api/policies";
+const API = process.env.NEXT_PUBLIC_API_URL + "/api/policies";
 
 const POLICY_LABELS: Record<string, string> = {
   leave_policy: "Leave Policy",

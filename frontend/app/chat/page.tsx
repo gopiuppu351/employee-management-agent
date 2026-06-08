@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/context/auth";
 
 interface Message {
   role: "user" | "assistant";
@@ -21,7 +22,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const employeeId = "E001";
+  const { employeeId } = useAuth();
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,7 +35,7 @@ export default function ChatPage() {
     setInput("");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/chat", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ employee_id: employeeId, message: msg }),

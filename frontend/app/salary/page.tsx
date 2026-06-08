@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import { useAuth } from "@/context/auth";
 
-const API = "http://localhost:8000/api/salaries";
+const API = process.env.NEXT_PUBLIC_API_URL + "/api/salaries";
 
 interface SalaryRecord {
   employee_id: string;
@@ -14,9 +15,8 @@ export default function SalaryPage() {
   const [salary, setSalary] = useState<SalaryRecord | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const employeeId = "E001";
-
-  const requesterId = "E001";
+  const { employeeId } = useAuth();
+  const requesterId = employeeId;
 
   async function fetchSalary() {
     setLoading(true);

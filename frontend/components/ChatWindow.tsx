@@ -11,7 +11,7 @@ interface ChatWindowProps {
   apiBase?: string;
 }
 
-export default function ChatWindow({ employeeId, apiBase = "http://localhost:8000/api" }: ChatWindowProps) {
+export default function ChatWindow({ employeeId, apiBase = process.env.NEXT_PUBLIC_API_URL + "/api" }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);

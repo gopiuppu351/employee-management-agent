@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/context/auth";
 
 interface Leave {
   id: string;
@@ -12,10 +13,10 @@ interface Leave {
   approved_by?: string;
 }
 
-const API = "http://localhost:8000/api/leaves";
-const EMPLOYEE_ID = "E001";
+const API = process.env.NEXT_PUBLIC_API_URL + "/api/leaves";
 
 export default function LeavesPage() {
+  const { employeeId: EMPLOYEE_ID } = useAuth();
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [form, setForm] = useState({ start_date: "", end_date: "", reason: "" });
   const [loading, setLoading] = useState(false);
@@ -31,13 +32,29 @@ export default function LeavesPage() {
 
   async function submitLeave(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setMsg("");
+
+    // Date validation
+    const today = new Date().toISOString().split("T")[0];
+    if (form.start_date < today) {
+      setMsg("Error: Start date cannot be in the past.");
+      return;
+    }
+    if (form.end_date < form.start_date) {
+      setMsg("Error: End date must be on or after the start date.");
+      return;
+    }
+    if (form.reason.trim().length < 5) {
+      setMsg("Error: Please provide a reason (at least 5 characters).");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch(`${API}/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employee_id: EMPLOYEE_ID, ...form }),
+        body: JSON.stringify({ employee_id: EMPLOYEE_ID, ...form, reason: form.reason.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -78,7 +95,8 @@ export default function LeavesPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-500 mb-1">Reason</label>
-            <textarea required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={3} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-lime-300 bg-slate-50" placeholder="Reason for leave..." />
+            <textarea required maxLength={500} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} rows={3} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-lime-300 bg-slate-50" placeholder="Reason for leave... (max 500 characters)" />
+            <p className="text-xs text-slate-400 text-right mt-1">{form.reason.length}/500</p>
           </div>
           <button type="submit" disabled={loading} className="bg-lime-500 text-white px-6 py-2 rounded-xl text-sm font-semibold hover:bg-lime-600 disabled:opacity-50 transition">
             {loading ? "Submitting..." : "Submit Request"}
