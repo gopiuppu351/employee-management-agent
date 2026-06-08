@@ -1,3 +1,4 @@
+// v2 — midnight blue & coral redesign
 export default function Dashboard() {
   return (
     <div className="max-w-4xl mx-auto">
