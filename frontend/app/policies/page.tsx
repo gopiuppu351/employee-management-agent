@@ -32,7 +32,7 @@ export default function PoliciesPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-stone-900 mb-6">Company Policies</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">Company Policies</h1>
       <div className="flex gap-5">
         <div className="w-48 shrink-0 space-y-1.5">
           {policies.map((p) => (
@@ -41,22 +41,23 @@ export default function PoliciesPage() {
               onClick={() => loadPolicy(p)}
               className={`w-full text-left text-sm px-4 py-2.5 rounded-xl transition font-medium ${
                 selected === p
-                  ? "bg-rose-500 text-white shadow-sm"
-                  : "bg-white border border-stone-100 text-stone-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100"
+                  ? "text-white shadow-sm"
+                  : "bg-white border border-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-100"
               }`}
+              style={selected === p ? { background: "#fb923c" } : {}}
             >
               {POLICY_LABELS[p] ?? p}
             </button>
           ))}
         </div>
 
-        <div className="card-accent-rose flex-1 bg-white rounded-2xl border border-stone-100 shadow-sm p-6 min-h-[300px]">
-          {!selected && <p className="text-stone-300 text-sm">Select a policy from the left.</p>}
-          {selected && loading && <p className="text-stone-400 text-sm animate-pulse">Loading...</p>}
+        <div className="card-accent-orange flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 min-h-[300px]">
+          {!selected && <p className="text-slate-300 text-sm">Select a policy from the left.</p>}
+          {selected && loading && <p className="text-slate-400 text-sm animate-pulse">Loading...</p>}
           {selected && !loading && (
             <>
-              <h2 className="text-base font-semibold text-rose-500 mb-3">{POLICY_LABELS[selected] ?? selected}</h2>
-              <p className="text-stone-600 text-sm leading-relaxed">{content}</p>
+              <h2 className="text-base font-semibold text-orange-500 mb-3">{POLICY_LABELS[selected] ?? selected}</h2>
+              <p className="text-slate-600 text-sm leading-relaxed">{content}</p>
             </>
           )}
         </div>

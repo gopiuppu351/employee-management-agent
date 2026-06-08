@@ -30,11 +30,11 @@ export default function LeaveForm({ employeeId, onSuccess }: LeaveFormProps) {
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      <input type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-green-300" />
-      <input type="date" required value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-green-300" />
-      <textarea required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-800 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-green-300" placeholder="Reason..." rows={2} />
-      <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded-xl text-sm font-semibold w-full hover:bg-green-600 transition">Apply for Leave</button>
-      {status && <p className="text-xs text-green-600 font-medium">{status}</p>}
+      <input type="date" required value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-lime-300" />
+      <input type="date" required value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-lime-300" />
+      <textarea required value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-lime-300" placeholder="Reason..." rows={2} />
+      <button type="submit" className="bg-lime-500 text-white px-4 py-2 rounded-xl text-sm font-semibold w-full hover:bg-lime-600 transition">Apply for Leave</button>
+      {status && <p className="text-xs text-lime-600 font-medium">{status}</p>}
     </form>
   );
 }

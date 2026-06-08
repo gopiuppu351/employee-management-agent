@@ -16,7 +16,7 @@ const SUGGESTIONS = [
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", text: "Hello! I'm your HR Assistant. I can help you with leave requests, salary inquiries, and company policies. How can I help you today?" },
+    { role: "assistant", text: "Hello! I'm your HR Assistant. How can I help you today?" },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,24 +50,24 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-2xl mx-auto flex flex-col" style={{ height: "calc(100vh - 120px)" }}>
-      <h1 className="text-2xl font-bold text-stone-900 mb-4">HR Assistant</h1>
+      <h1 className="text-2xl font-bold text-slate-800 mb-4">HR Assistant</h1>
 
       <div className="flex flex-wrap gap-2 mb-3">
         {SUGGESTIONS.map((s) => (
-          <button key={s} onClick={() => sendMessage(s)} className="text-xs bg-white border border-stone-200 text-stone-500 rounded-full px-3 py-1.5 hover:border-red-300 hover:text-red-500 transition">
+          <button key={s} onClick={() => sendMessage(s)} className="text-xs bg-white border border-slate-200 text-slate-500 rounded-full px-3 py-1.5 hover:border-cyan-300 hover:text-cyan-600 transition">
             {s}
           </button>
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto space-y-3 border border-stone-100 rounded-2xl p-4 bg-white shadow-sm">
+      <div className="flex-1 overflow-y-auto space-y-3 border border-slate-100 rounded-2xl p-4 bg-white shadow-sm">
         {messages.map((m, i) => (
           <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
             <div className={`max-w-[80%] p-3 rounded-2xl text-sm whitespace-pre-wrap ${
               m.role === "user"
-                ? "bg-red-400 text-white rounded-br-none"
-                : "bg-stone-100 text-stone-700 rounded-bl-none"
-            }`}>
+                ? "text-white rounded-br-none"
+                : "bg-slate-100 text-slate-700 rounded-bl-none"
+            }`} style={m.role === "user" ? { background: "#22d3ee", color: "#0f172a" } : {}}>
               <span className="block font-semibold mb-1 text-xs opacity-60">{m.role === "user" ? "You" : "HR Agent"}</span>
               {m.text}
             </div>
@@ -75,7 +75,7 @@ export default function ChatPage() {
         ))}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-stone-100 text-stone-400 p-3 rounded-2xl text-sm rounded-bl-none animate-pulse">Thinking...</div>
+            <div className="bg-slate-100 text-slate-400 p-3 rounded-2xl text-sm rounded-bl-none animate-pulse">Thinking...</div>
           </div>
         )}
         <div ref={bottomRef} />
@@ -83,7 +83,7 @@ export default function ChatPage() {
 
       <div className="flex gap-2 mt-4">
         <input
-          className="flex-1 border border-stone-200 rounded-xl px-4 py-2 text-sm text-stone-800 bg-white focus:outline-none focus:ring-2 focus:ring-red-300"
+          className="flex-1 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-300"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
@@ -93,7 +93,8 @@ export default function ChatPage() {
         <button
           onClick={() => sendMessage()}
           disabled={loading}
-          className="bg-red-400 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-red-500 disabled:opacity-50 transition"
+          className="text-slate-900 px-5 py-2 rounded-xl text-sm font-semibold disabled:opacity-50 transition"
+          style={{ background: "#22d3ee" }}
         >
           Send
         </button>
