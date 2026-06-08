@@ -3,13 +3,9 @@ name: Claude PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  pull_request_review_comment:
-    types: [created]
-  issue_comment:
-    types: [created]
 
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
+  group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -33,7 +29,6 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_bots: '*'
           direct_prompt: |
             You are a senior code reviewer. Review this PR thoroughly and report:
             1. Any security vulnerabilities (hardcoded credentials, exposed secrets, passwords)
