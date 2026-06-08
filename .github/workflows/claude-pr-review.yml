@@ -33,6 +33,7 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_bots: '*'
           direct_prompt: |
             You are a senior code reviewer. Review this PR thoroughly and report:
             1. Any security vulnerabilities (hardcoded credentials, exposed secrets, passwords)
