@@ -73,8 +73,7 @@ export default function LeavesPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-500 mb-1">End Date</label>
-              {/* ERROR 3: end_date field is missing the required attribute — users can submit without an end date */}
-              <input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-lime-300 bg-slate-50" />
+              <input type="date" required value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-lime-300 bg-slate-50" />
             </div>
           </div>
           <div>

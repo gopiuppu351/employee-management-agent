@@ -17,8 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <a href="/leaves" className="text-sm text-slate-400 hover:text-white transition-colors">Leaves</a>
           <a href="/salary" className="text-sm text-slate-400 hover:text-white transition-colors">Salary</a>
           <a href="/policies" className="text-sm text-slate-400 hover:text-white transition-colors">Policies</a>
-          {/* ERROR 1: hardcoded employee data exposed directly in navbar without any auth check */}
-          <span className="ml-auto text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-full">Password: admin123 | Alice · E001</span>
+          <span className="ml-auto text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-full">Alice Johnson · E001</span>
         </nav>
         <main className="p-6">{children}</main>
       </body>

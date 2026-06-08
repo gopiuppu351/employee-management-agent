@@ -16,9 +16,7 @@ export default function SalaryPage() {
   const [loading, setLoading] = useState(false);
   const employeeId = "E001";
 
-  // ERROR 2: requester_id is hardcoded to "ADMIN" — bypasses access control,
-  // any employee can view anyone's salary
-  const requesterId = "ADMIN";
+  const requesterId = "E001";
 
   async function fetchSalary() {
     setLoading(true);
