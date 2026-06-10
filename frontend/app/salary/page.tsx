@@ -15,15 +15,30 @@ export default function SalaryPage() {
   const [salary, setSalary] = useState<SalaryRecord | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { employeeId } = useAuth();
-  const requesterId = employeeId;
+  const [targetEmployeeId, setTargetEmployeeId] = useState("");
+  const { user } = useAuth();
+
+  if (!user) {
+    return <div>Please log in to access this page.</div>;
+  }
 
   async function fetchSalary() {
     setLoading(true);
     setError("");
     setSalary(null);
+
+    // Determine which employee's salary to fetch
+    const employeeToFetch = targetEmployeeId || user.employeeId;
+    
+    // Only allow managers to view other employees' salaries
+    if (targetEmployeeId && targetEmployeeId !== user.employeeId && user.role !== "manager") {
+      setError("Only managers can view other employees' salaries.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch(`${API}/${employeeId}?requester_id=${requesterId}`);
+      const res = await fetch(`${API}/${employeeToFetch}?requester_id=${user.employeeId}`);
       const data = await res.json();
       if (res.ok) {
         setSalary(data.salary);
@@ -42,10 +57,34 @@ export default function SalaryPage() {
 
       <div className="card-accent-fuchsia bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
         <p className="text-sm text-slate-400 mb-5">
-          View your current compensation details.
+          {user.role === "manager" 
+            ? "View salary information for yourself or your team members." 
+            : "View your current compensation details."
+          }
         </p>
-        <button onClick={fetchSalary} disabled={loading} className="px-6 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition mb-6" style={{ background: "#e879f9" }}>
-          {loading ? "Loading..." : "View My Salary"}
+        
+        {user.role === "manager" && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-600 mb-2">
+              Employee ID (leave empty for your own salary)
+            </label>
+            <input
+              type="text"
+              value={targetEmployeeId}
+              onChange={(e) => setTargetEmployeeId(e.target.value.trim())}
+              placeholder="Enter employee ID or leave empty"
+              className="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-300"
+            />
+          </div>
+        )}
+        
+        <button 
+          onClick={fetchSalary} 
+          disabled={loading} 
+          className="px-6 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition mb-6" 
+          style={{ background: "#e879f9" }}
+        >
+          {loading ? "Loading..." : `View ${targetEmployeeId ? 'Employee' : 'My'} Salary`}
         </button>
 
         {error && (

@@ -27,13 +27,20 @@ export default function ChatWindow({ employeeId, apiBase = process.env.NEXT_PUBL
     setMessages((p) => [...p, { role: "user", text: msg }]);
     setInput("");
     setLoading(true);
-    const res = await fetch(`${apiBase}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ employee_id: employeeId, message: msg }),
-    });
-    const data = await res.json();
-    setMessages((p) => [...p, { role: "assistant", text: res.ok ? data.reply : data.detail }]);
+    
+    try {
+      const res = await fetch(`${apiBase}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employee_id: employeeId, message: msg }),
+      });
+      const data = await res.json();
+      const reply = res.ok ? data.reply : (data.detail ?? "An error occurred.");
+      setMessages((p) => [...p, { role: "assistant", text: reply }]);
+    } catch (error) {
+      setMessages((p) => [...p, { role: "assistant", text: "Could not reach the backend." }]);
+    }
+    
     setLoading(false);
   }
 

@@ -18,7 +18,20 @@ export default function PoliciesPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/`).then((r) => r.json()).then((d) => setPolicies(d.policies ?? []));
+    async function fetchPolicies() {
+      try {
+        const response = await fetch(`${API}/`);
+        const data = await response.json();
+        if (response.ok) {
+          setPolicies(data.policies ?? []);
+        } else {
+          console.error("Failed to fetch policies:", data.detail);
+        }
+      } catch (error) {
+        console.error("Could not fetch policies:", error);
+      }
+    }
+    fetchPolicies();
   }, []);
 
   async function loadPolicy(name: string) {

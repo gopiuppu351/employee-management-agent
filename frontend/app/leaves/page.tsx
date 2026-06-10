@@ -16,7 +16,13 @@ interface Leave {
 const API = process.env.NEXT_PUBLIC_API_URL + "/api/leaves";
 
 export default function LeavesPage() {
-  const { employeeId: EMPLOYEE_ID } = useAuth();
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <div>Please log in to access this page.</div>;
+  }
+  
+  const EMPLOYEE_ID = user.employeeId;
   const [leaves, setLeaves] = useState<Leave[]>([]);
   const [form, setForm] = useState({ start_date: "", end_date: "", reason: "" });
   const [loading, setLoading] = useState(false);

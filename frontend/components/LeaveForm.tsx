@@ -12,19 +12,40 @@ export default function LeaveForm({ employeeId, onSuccess }: LeaveFormProps) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    setStatus("");
+
+    // Date validation
+    const today = new Date().toISOString().split("T")[0];
+    if (form.start_date < today) {
+      setStatus("Error: Start date cannot be in the past.");
+      return;
+    }
+    if (form.end_date < form.start_date) {
+      setStatus("Error: End date must be on or after the start date.");
+      return;
+    }
+    if (form.reason.trim().length < 5) {
+      setStatus("Error: Please provide a reason (at least 5 characters).");
+      return;
+    }
+
     setStatus("Submitting...");
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaves/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ employee_id: employeeId, ...form }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setStatus("Leave submitted!");
-      setForm({ start_date: "", end_date: "", reason: "" });
-      onSuccess?.();
-    } else {
-      setStatus(`Error: ${data.detail}`);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leaves/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employee_id: employeeId, ...form, reason: form.reason.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStatus("Leave submitted!");
+        setForm({ start_date: "", end_date: "", reason: "" });
+        onSuccess?.();
+      } else {
+        setStatus(`Error: ${data.detail}`);
+      }
+    } catch {
+      setStatus("Error: Could not reach the backend.");
     }
   }
 

@@ -22,7 +22,11 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const { employeeId } = useAuth();
+  const { user } = useAuth();
+
+  if (!user) {
+    return <div>Please log in to access this page.</div>;
+  }
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -38,7 +42,7 @@ export default function ChatPage() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employee_id: employeeId, message: msg }),
+        body: JSON.stringify({ employee_id: user.employeeId, message: msg }),
       });
       const data = await res.json();
       const reply = res.ok ? data.reply : (data.detail ?? "An error occurred.");
