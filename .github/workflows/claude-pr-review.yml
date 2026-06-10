@@ -25,16 +25,59 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           direct_prompt: |
-            You are a senior code reviewer. Review this PR thoroughly and report:
-            1. Any security vulnerabilities (hardcoded credentials, exposed secrets, passwords)
-            2. Any access control issues (bypassed auth, wrong requester IDs)
-            3. Any missing form validations (required fields, input checks)
-            4. Any bugs or bad practices
+            You are a senior code reviewer. Review this PR and output findings as a JSON array ONLY.
+            No narrative text — only the JSON array.
 
-            Be specific — mention the exact file name and line where each issue is found.
-            Post a detailed review comment on this PR.
+            ONLY report findings in these categories (Q2 — Focus on What Matters):
+            1. Security vulnerabilities (hardcoded credentials, exposed secrets, passwords)
+            2. Access control issues (bypassed auth, wrong requester IDs)
+            3. Missing form validations (required fields, input checks)
+            4. Logic bugs that break functionality
+
+            DO NOT report:
+            - Code style or formatting preferences
+            - Variable or function naming suggestions
+            - Comment or documentation quality
+            - Code organization opinions
+
+            For each finding output this exact JSON structure (Q12 — Inline PR Comments + Q13 — Visible Reasoning):
+            [
+              {
+                "file": "relative/path/to/file.tsx",
+                "line": 42,
+                "severity": "critical",
+                "issue": "Short description of the problem",
+                "reasoning": "One sentence explaining why this is a real issue not a false positive",
+                "fix": "Specific actionable suggestion on exactly what to change"
+              }
+            ]
+
+            Severity levels:
+            - "critical" → security vulnerability or data exposure
+            - "high"     → access control bypass or broken auth
+            - "medium"   → missing validation or logic bug
+            - "low"      → minor correctness issue
+
+            If no issues found, output: []
+
+      - name: Deduplicate findings (Q5 — No Repeat Findings)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -f claude-findings.json ]; then
+            node .github/scripts/deduplicate-findings.js
+          else
+            echo "[]" > deduplicated-findings.json
+          fi
