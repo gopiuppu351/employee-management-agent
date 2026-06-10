@@ -46,12 +46,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: claude-haiku-4-5-20251001
           direct_prompt: |
             You are a senior code reviewer. Review this PR and output findings as a JSON array ONLY.
             No narrative text — only the JSON array.
