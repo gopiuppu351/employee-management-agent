@@ -1,4 +1,4 @@
-// v2 — midnight blue & coral redesign
+// v4 — trigger upgraded Claude CI review (Q12, Q13, Q2, Q5)
 export default function Dashboard() {
   return (
     <div className="max-w-4xl mx-auto">
