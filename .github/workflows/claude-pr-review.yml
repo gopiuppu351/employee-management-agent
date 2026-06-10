@@ -20,14 +20,15 @@ jobs:
     # Runs on issue_comment ONLY when:
     #   - Comment is on a PR (not a regular issue)
     #   - Comment contains @claude
-    #   - Comment author is NOT a bot
+    #   - Comment author is NOT a bot (fixed: use exact actor names without brackets)
     if: |
       github.event_name == 'pull_request' ||
       (
         github.event_name == 'issue_comment' &&
         github.event.issue.pull_request != null &&
-        github.actor != 'claude[bot]' &&
-        github.actor != 'github-actions[bot]' &&
+        github.actor != 'claude' &&
+        github.actor != 'github-actions' &&
+        !endsWith(github.actor, '[bot]') &&
         contains(github.event.comment.body, '@claude')
       )
 
