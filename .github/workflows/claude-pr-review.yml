@@ -3,9 +3,11 @@ name: Claude PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
 
 concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
+  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
@@ -13,8 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
+    # Safety filter — prevents infinite loop:
+    # Runs on pull_request events always.
+    # Runs on issue_comment ONLY when:
+    #   - Comment is on a PR (not a regular issue)
+    #   - Comment contains @claude
+    #   - Comment author is NOT a bot
+    if: |
+      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        github.actor != 'claude[bot]' &&
+        github.actor != 'github-actions[bot]' &&
+        contains(github.event.comment.body, '@claude')
+      )
+
     permissions:
-      contents: read
+      contents: write
       pull-requests: write
       issues: write
       id-token: write
@@ -70,7 +88,12 @@ jobs:
 
             If no issues found, output: []
 
+            If triggered by a comment containing "@claude implement" or "@claude fix",
+            apply the recommended fixes directly to the codebase and commit the changes
+            to the PR branch automatically.
+
       - name: Deduplicate findings (Q5 — No Repeat Findings)
+        if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
