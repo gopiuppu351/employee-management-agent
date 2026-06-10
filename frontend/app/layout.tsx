@@ -69,7 +69,7 @@ export default function RootLayout({
               >
                 GU
               </span>
-              Gopi Uppu · E001
+              Goopi Uppu · E001
             </span>
           </nav>
           <main className="p-6">
