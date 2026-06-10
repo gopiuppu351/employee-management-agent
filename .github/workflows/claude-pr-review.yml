@@ -16,13 +16,18 @@ jobs:
     timeout-minutes: 30
 
     # Safety filter — prevents infinite loop:
-    # Runs on pull_request events always.
+    # Runs on pull_request ONLY when pushed by a human (not Claude bot commits)
     # Runs on issue_comment ONLY when:
     #   - Comment is on a PR (not a regular issue)
     #   - Comment contains @claude
-    #   - Comment author is NOT a bot (fixed: use exact actor names without brackets)
+    #   - Comment author is NOT a bot
     if: |
-      github.event_name == 'pull_request' ||
+      (
+        github.event_name == 'pull_request' &&
+        github.actor != 'claude' &&
+        github.actor != 'github-actions' &&
+        !endsWith(github.actor, '[bot]')
+      ) ||
       (
         github.event_name == 'issue_comment' &&
         github.event.issue.pull_request != null &&
@@ -43,6 +48,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -53,7 +59,7 @@ jobs:
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          # model: claude-haiku-4-5-20251001
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           direct_prompt: |
             You are a senior code reviewer. Review this PR and output findings as a JSON array ONLY.
             No narrative text — only the JSON array.
