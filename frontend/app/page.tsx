@@ -1,8 +1,8 @@
-// v4 — trigger upgraded Claude CI review (Q12, Q13, Q2, Q5)
+// v5 — minor UI polish: updated heading and welcome text
 export default function Dashboard() {
   return (
     <div className="max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-1" style={{ color: "#1e293b" }}>Employee Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-1" style={{ color: "#1e293b" }}>HR Management Dashboard</h1>
       <p className="text-sm text-slate-400 mb-8">Welcome back, Alice. Here's everything in one place.</p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

@@ -20,7 +20,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <a href="/leaves" className="text-sm text-slate-400 hover:text-white transition-colors">Leaves</a>
             <a href="/salary" className="text-sm text-slate-400 hover:text-white transition-colors">Salary</a>
             <a href="/policies" className="text-sm text-slate-400 hover:text-white transition-colors">Policies</a>
-            <span className="ml-auto text-xs text-slate-400 bg-slate-800 px-3 py-1 rounded-full">Alice Johnson · E001</span>
+            <span className="ml-auto flex items-center gap-2 text-xs text-slate-400 bg-slate-800 px-3 py-1.5 rounded-full">
+              <span className="w-5 h-5 rounded-full bg-cyan-500 flex items-center justify-center text-white font-bold text-xs" style={{ fontSize: "10px" }}>AJ</span>
+              Alice Johnson · E001
+            </span>
           </nav>
           <main className="p-6">
             <ErrorBoundary>{children}</ErrorBoundary>
