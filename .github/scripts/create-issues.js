@@ -1,32 +1,24 @@
 /**
  * Requirement 2 — Create GitHub Issues for Claude Review Findings
  *
- * Reads Claude's JSON findings from claude-findings.json,
+ * Reads Claude's JSON findings from the latest PR comment,
  * checks for existing duplicate issues, and creates a new
- * GitHub Issue for each unique finding with:
- *   - Title with severity prefix
- *   - Full description with reasoning and fix
- *   - Severity/priority label
- *   - Category label
- *   - PR reference link
- *   - Duplicate prevention
+ * GitHub Issue for each unique finding.
  */
 
 const https = require("https");
-const fs    = require("fs");
 
-const FINDINGS_FILE  = "claude-findings.json";
-const GITHUB_TOKEN   = process.env.GITHUB_TOKEN;
-const REPO           = process.env.GITHUB_REPOSITORY;   // "owner/repo"
-const PR_NUMBER      = process.env.PR_NUMBER;
-const PR_URL         = process.env.PR_URL;
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO        = process.env.GITHUB_REPOSITORY;  // "owner/repo"
+const PR_NUMBER   = process.env.PR_NUMBER;
+const PR_URL      = process.env.PR_URL;
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── GitHub API helper ────────────────────────────────────────────────────────
 
 function githubRequest(method, path, body) {
   return new Promise((resolve, reject) => {
     if (!GITHUB_TOKEN || !REPO) {
-      console.log("Missing GitHub env vars — skipping issue creation.");
+      console.log("Missing GitHub env vars — skipping.");
       resolve({ status: 0, data: [] });
       return;
     }
@@ -51,11 +43,8 @@ function githubRequest(method, path, body) {
       let data = "";
       res.on("data", chunk => data += chunk);
       res.on("end", () => {
-        try {
-          resolve({ status: res.statusCode, data: JSON.parse(data) });
-        } catch {
-          resolve({ status: res.statusCode, data: [] });
-        }
+        try { resolve({ status: res.statusCode, data: JSON.parse(data) }); }
+        catch { resolve({ status: res.statusCode, data: [] }); }
       });
     });
 
@@ -65,30 +54,69 @@ function githubRequest(method, path, body) {
   });
 }
 
-// ── Severity → label + emoji ──────────────────────────────────────────────
+// ── Fetch PR comments and extract JSON findings ──────────────────────────────
+
+async function extractFindingsFromPRComments() {
+  console.log(`Fetching PR comments for PR #${PR_NUMBER}...`);
+
+  const result = await githubRequest("GET", `/issues/${PR_NUMBER}/comments?per_page=100`);
+  if (result.status !== 200 || !Array.isArray(result.data)) {
+    console.log("Could not fetch PR comments.");
+    return [];
+  }
+
+  const comments = result.data;
+  console.log(`Found ${comments.length} comments on PR.`);
+
+  // Look through comments from newest to oldest for Claude's JSON findings
+  for (const comment of comments.reverse()) {
+    const body = comment.body || "";
+
+    // Try to find a JSON array in the comment
+    const jsonMatches = body.match(/\[[\s\S]*?\]/g);
+    if (!jsonMatches) continue;
+
+    for (const match of jsonMatches) {
+      try {
+        const parsed = JSON.parse(match);
+        // Validate it looks like Claude findings (has file, severity, issue fields)
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          parsed[0].file &&
+          parsed[0].severity &&
+          parsed[0].issue
+        ) {
+          console.log(`✅ Found ${parsed.length} findings in PR comment by ${comment.user?.login}`);
+          return parsed;
+        }
+      } catch {
+        // Not valid JSON — try next match
+      }
+    }
+  }
+
+  console.log("No valid JSON findings found in PR comments.");
+  return [];
+}
+
+// ── Severity helpers ─────────────────────────────────────────────────────────
 
 function severityEmoji(severity) {
-  const map = {
-    critical: "🔴",
-    high:     "🟠",
-    medium:   "🟡",
-    low:      "🟢",
-  };
-  return map[severity] ?? "⚪";
+  return { critical: "🔴", high: "🟠", medium: "🟡", low: "🟢" }[severity] ?? "⚪";
 }
 
 function severityLabel(severity) {
-  const map = {
+  return {
     critical: "priority: critical",
     high:     "priority: high",
     medium:   "priority: medium",
     low:      "priority: low",
-  };
-  return map[severity] ?? "priority: low";
+  }[severity] ?? "priority: low";
 }
 
 function categoryLabel(category) {
-  const map = {
+  return {
     "security":       "security",
     "access-control": "security",
     "validation":     "bug",
@@ -96,11 +124,10 @@ function categoryLabel(category) {
     "code-quality":   "code quality",
     "type-safety":    "code quality",
     "edge-case":      "bug",
-  };
-  return map[category] ?? "enhancement";
+  }[category] ?? "enhancement";
 }
 
-// ── Build issue title ─────────────────────────────────────────────────────
+// ── Build issue title and body ───────────────────────────────────────────────
 
 function buildTitle(finding) {
   const emoji    = severityEmoji(finding.severity);
@@ -109,8 +136,6 @@ function buildTitle(finding) {
   const issue    = finding.issue ?? "Code issue";
   return `${emoji} [${severity}] ${issue} — ${file}`;
 }
-
-// ── Build issue body ──────────────────────────────────────────────────────
 
 function buildBody(finding) {
   const prRef = PR_URL
@@ -133,9 +158,9 @@ function buildBody(finding) {
     finding.reasoning ?? "No reasoning provided.",
     ``,
     `### 🔧 Suggested Fix`,
-    `\`\`\``,
+    "```",
     finding.fix ?? "No fix provided.",
-    `\`\`\``,
+    "```",
     ``,
     `### 🔗 Reference`,
     `Found during automated Claude Code Review on ${prRef}`,
@@ -145,19 +170,10 @@ function buildBody(finding) {
   ].join("\n");
 }
 
-// ── Fetch existing open issues to prevent duplicates ─────────────────────
-
-async function fetchExistingIssues() {
-  const result = await githubRequest("GET", "/issues?state=open&per_page=100&labels=claude-review");
-  if (result.status !== 200) return [];
-  return Array.isArray(result.data) ? result.data : [];
-}
-
-// ── Ensure required labels exist ─────────────────────────────────────────
+// ── Ensure labels exist ──────────────────────────────────────────────────────
 
 async function ensureLabel(name, color, description) {
   await githubRequest("POST", "/labels", { name, color, description });
-  // If label already exists GitHub returns 422 — we ignore that
 }
 
 async function ensureLabels() {
@@ -172,37 +188,32 @@ async function ensureLabels() {
   await ensureLabel("priority: low",      "0e8a16", "Low priority");
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────
+// ── Fetch existing issues for duplicate prevention ───────────────────────────
+
+async function fetchExistingIssueTitles() {
+  const result = await githubRequest("GET", "/issues?state=open&per_page=100&labels=claude-review");
+  if (result.status !== 200 || !Array.isArray(result.data)) return new Set();
+  return new Set(result.data.map(i => i.title));
+}
+
+// ── Main ─────────────────────────────────────────────────────────────────────
 
 async function run() {
-  // Read findings
-  if (!fs.existsSync(FINDINGS_FILE)) {
-    console.log("No findings file found — skipping issue creation.");
+  console.log("=== Create GitHub Issues from Claude Findings ===");
+
+  const findings = await extractFindingsFromPRComments();
+
+  if (!findings.length) {
+    console.log("No findings to create issues for.");
     return;
   }
 
-  let findings;
-  try {
-    findings = JSON.parse(fs.readFileSync(FINDINGS_FILE, "utf8"));
-  } catch {
-    console.log("Could not parse findings file — skipping.");
-    return;
-  }
+  console.log(`Processing ${findings.length} findings...`);
 
-  if (!findings || !findings.length) {
-    console.log("No findings — no issues to create.");
-    return;
-  }
-
-  console.log(`Found ${findings.length} findings. Checking for duplicates...`);
-
-  // Ensure labels exist
   await ensureLabels();
 
-  // Fetch existing issues
-  const existingIssues = await fetchExistingIssues();
-  const existingTitles = new Set(existingIssues.map(i => i.title));
-  console.log(`Existing open claude-review issues: ${existingTitles.size}`);
+  const existingTitles = await fetchExistingIssueTitles();
+  console.log(`Existing claude-review issues: ${existingTitles.size}`);
 
   let created = 0;
   let skipped = 0;
@@ -210,36 +221,38 @@ async function run() {
   for (const finding of findings) {
     const title = buildTitle(finding);
 
-    // Duplicate check
     if (existingTitles.has(title)) {
       console.log(`  SKIP (duplicate): ${title}`);
       skipped++;
       continue;
     }
 
-    const body   = buildBody(finding);
     const labels = [
       "claude-review",
       categoryLabel(finding.category),
       severityLabel(finding.severity),
-    ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate labels
+    ].filter((v, i, a) => a.indexOf(v) === i);
 
-    const result = await githubRequest("POST", "/issues", { title, body, labels });
+    const result = await githubRequest("POST", "/issues", {
+      title,
+      body: buildBody(finding),
+      labels,
+    });
 
     if (result.status === 201) {
-      console.log(`  CREATED: ${title}`);
-      console.log(`  URL: ${result.data.html_url}`);
-      existingTitles.add(title); // prevent duplicates within same run
+      console.log(`  ✅ CREATED: ${title}`);
+      console.log(`     URL: ${result.data.html_url}`);
+      existingTitles.add(title);
       created++;
     } else {
-      console.log(`  FAILED (${result.status}): ${title}`);
+      console.log(`  ❌ FAILED (${result.status}): ${title}`);
+      console.log(`     Response: ${JSON.stringify(result.data).substring(0, 200)}`);
     }
 
-    // Small delay to avoid rate limiting
     await new Promise(r => setTimeout(r, 300));
   }
 
-  console.log(`\nDone — Created: ${created} | Skipped (duplicates): ${skipped}`);
+  console.log(`\n=== Done — Created: ${created} | Skipped: ${skipped} ===`);
 }
 
 run().catch(console.error);
