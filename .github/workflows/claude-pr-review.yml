@@ -184,8 +184,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           PR_URL: ${{ github.event.pull_request.html_url || github.event.issue.html_url }}
         run: |
-          if [ -f claude-findings.json ]; then
-            node .github/scripts/create-issues.js
-          else
-            echo "No findings file — skipping issue creation."
-          fi
+          echo "Waiting 10s for Claude to finish posting PR comment..."
+          sleep 10
+          node .github/scripts/create-issues.js
