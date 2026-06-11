@@ -176,10 +176,12 @@ jobs:
           else
             echo "[]" > deduplicated-findings.json
           fi
-      - name: Verify scripts exist
-        run: |
-          pwd
-          ls -R .github
+      - name: Re-checkout main for scripts
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+          clean: false
 
       - name: Create GitHub Issues (Req 2 — Track Findings as Issues)
         env:
