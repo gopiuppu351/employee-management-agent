@@ -177,3 +177,17 @@ jobs:
           else
             echo "[]" > deduplicated-findings.json
           fi
+
+      - name: Create GitHub Issues (Req 2 — Track Findings as Issues)
+        if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          if [ -f claude-findings.json ]; then
+            node .github/scripts/create-issues.js
+          else
+            echo "No findings file — skipping issue creation."
+          fi
