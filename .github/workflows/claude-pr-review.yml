@@ -177,6 +177,10 @@ jobs:
           else
             echo "[]" > deduplicated-findings.json
           fi
+      - name: Verify scripts exist
+        run: |
+          pwd
+          ls -R .github
 
       - name: Create GitHub Issues (Req 2 — Track Findings as Issues)
         env:
