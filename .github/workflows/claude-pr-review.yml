@@ -49,6 +49,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -186,6 +187,4 @@ jobs:
         run: |
           echo "Waiting 10s for Claude to finish posting PR comment..."
           sleep 10
-          echo "Current directory: $(pwd)"
-          echo "Script exists: $(ls -la .github/scripts/create-issues.js 2>/dev/null || echo 'NOT FOUND')"
-          node "$GITHUB_WORKSPACE/.github/scripts/create-issues.js"
+          node .github/scripts/create-issues.js
