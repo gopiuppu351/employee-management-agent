@@ -64,23 +64,78 @@ jobs:
             You are a senior code reviewer. Review this PR and output findings as a JSON array ONLY.
             No narrative text — only the JSON array.
 
-            ONLY report findings in these categories (Q2 — Focus on What Matters):
-            1. Security vulnerabilities (hardcoded credentials, exposed secrets, passwords)
-            2. Access control issues (bypassed auth, wrong requester IDs)
-            3. Missing form validations (required fields, input checks)
-            4. Logic bugs that break functionality
+            ── EXISTING CATEGORIES (always check) ──────────────────────────────
+            1. Security vulnerabilities
+               - Hardcoded credentials, exposed secrets, passwords in code
+               - Environment variables missing for sensitive values
+               - Data exposure risks visible to unauthorized users
 
-            DO NOT report:
+            2. Access control issues
+               - Bypassed authentication, wrong requester IDs
+               - Missing role checks before sensitive operations
+               - Endpoints or data accessible without proper authorization
+
+            3. Missing form validations
+               - Required fields without required attribute
+               - No input length limits or format checks
+               - User input passed to API without sanitization
+
+            4. Logic bugs that break functionality
+               - Incorrect conditional logic or wrong comparisons
+               - Missing error handling in async operations
+               - State management issues causing incorrect UI behavior
+
+            ── NEW CATEGORIES (Requirement 1 — Extended CI Coverage) ──────────
+            5. Code quality and maintainability
+               - Functions longer than 50 lines doing too many things
+               - Duplicate logic that should be extracted into a shared utility
+               - Dead code — variables declared but never used, unreachable blocks
+               - Deeply nested conditionals (more than 3 levels) that reduce readability
+
+            6. Static type checking
+               - Use of "any" type that bypasses TypeScript safety
+               - Missing return types on functions that return values
+               - Props passed without proper TypeScript interface definitions
+               - Type assertions (as SomeType) used instead of proper typing
+
+            7. Integration test validation
+               - New API calls added with no corresponding error handling for failure cases
+               - Missing loading and error states for async data fetching
+               - Form submissions with no success or failure feedback to the user
+               - Component side effects with no cleanup (missing useEffect return)
+
+            8. Security best practices and vulnerability checks
+               - XSS risks — user input rendered without sanitization
+               - CSRF risks — state-changing operations without protection
+               - Sensitive data logged to console (console.log with passwords, tokens, IDs)
+               - API responses rendered directly without validation
+
+            9. Coding standards enforcement
+               - Inconsistent error handling patterns (some try/catch, some .catch, some none)
+               - Mixed async patterns (callbacks mixed with async/await in same codebase)
+               - Constants defined inline instead of as named constants
+               - Magic numbers or strings used directly instead of named values
+
+            10. Edge case handling
+                - No null/undefined checks before accessing object properties
+                - Array operations with no empty array guard
+                - Date comparisons with no timezone consideration
+                - API response fields accessed without checking if they exist
+
+            ── DO NOT REPORT ────────────────────────────────────────────────────
             - Code style or formatting preferences
             - Variable or function naming suggestions
             - Comment or documentation quality
             - Code organization opinions
+            - Minor refactoring suggestions with no functional impact
 
-            For each finding output this exact JSON structure (Q12 — Inline PR Comments + Q13 — Visible Reasoning):
+            ── OUTPUT FORMAT ────────────────────────────────────────────────────
+            For each finding output this exact JSON structure:
             [
               {
                 "file": "relative/path/to/file.tsx",
                 "line": 42,
+                "category": "code-quality",
                 "severity": "critical",
                 "issue": "Short description of the problem",
                 "reasoning": "One sentence explaining why this is a real issue not a false positive",
@@ -88,11 +143,20 @@ jobs:
               }
             ]
 
+            Category values:
+            - "security"         → categories 1 and 8
+            - "access-control"   → category 2
+            - "validation"       → categories 3 and 7
+            - "logic-bug"        → category 4
+            - "code-quality"     → categories 5 and 9
+            - "type-safety"      → category 6
+            - "edge-case"        → category 10
+
             Severity levels:
             - "critical" → security vulnerability or data exposure
-            - "high"     → access control bypass or broken auth
-            - "medium"   → missing validation or logic bug
-            - "low"      → minor correctness issue
+            - "high"     → access control bypass, broken auth, XSS/CSRF risk
+            - "medium"   → missing validation, logic bug, type safety issue
+            - "low"      → code quality, edge case, standards violation
 
             If no issues found, output: []
 
