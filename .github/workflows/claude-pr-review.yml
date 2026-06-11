@@ -186,4 +186,6 @@ jobs:
         run: |
           echo "Waiting 10s for Claude to finish posting PR comment..."
           sleep 10
-          node .github/scripts/create-issues.js
+          echo "Current directory: $(pwd)"
+          echo "Script exists: $(ls -la .github/scripts/create-issues.js 2>/dev/null || echo 'NOT FOUND')"
+          node "$GITHUB_WORKSPACE/.github/scripts/create-issues.js"
