@@ -166,11 +166,10 @@ jobs:
             to the PR branch automatically.
 
       - name: Deduplicate findings (Q5 — No Repeat Findings)
-        if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
         run: |
           if [ -f claude-findings.json ]; then
             node .github/scripts/deduplicate-findings.js
@@ -179,12 +178,11 @@ jobs:
           fi
 
       - name: Create GitHub Issues (Req 2 — Track Findings as Issues)
-        if: github.event_name == 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          PR_URL: ${{ github.event.pull_request.html_url || github.event.issue.html_url }}
         run: |
           if [ -f claude-findings.json ]; then
             node .github/scripts/create-issues.js
