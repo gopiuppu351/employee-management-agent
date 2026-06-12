@@ -55,6 +55,15 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Measure PR diff size for token estimation (Req 3)
+        id: diff
+        run: |
+          DIFF_CHARS=$(git diff origin/main...HEAD 2>/dev/null | wc -c || echo "0")
+          FILES_CHANGED=$(git diff origin/main...HEAD --name-only 2>/dev/null | wc -l || echo "0")
+          echo "diff_chars=$DIFF_CHARS" >> $GITHUB_OUTPUT
+          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+          echo "Diff size: $DIFF_CHARS chars across $FILES_CHANGED files"
+
       - name: Run Claude Code Review
         id: claude
         uses: anthropics/claude-code-action@beta
@@ -205,5 +214,8 @@ jobs:
           OUTPUT_TOKENS: ${{ steps.claude.outputs.output_tokens || '0' }}
           REVIEW_TIMESTAMP: ${{ github.event.pull_request.updated_at || github.event.comment.created_at }}
           FINDINGS_COUNT: ${{ steps.claude.outputs.num_turns || '0' }}
+          DIFF_CHARS: ${{ steps.diff.outputs.diff_chars || '0' }}
+          FILES_CHANGED: ${{ steps.diff.outputs.files_changed || '0' }}
+          PROMPT_CHARS: "2500"
         run: |
           node .github/scripts/post-metrics.js
