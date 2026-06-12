@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 
-const API = "http://localhost:8000/api/policies";
+const API = process.env.NEXT_PUBLIC_API_URL + "/api/policies";
 
 const POLICY_LABELS: Record<string, string> = {
   leave_policy: "Leave Policy",
@@ -18,7 +18,20 @@ export default function PoliciesPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${API}/`).then((r) => r.json()).then((d) => setPolicies(d.policies ?? []));
+    async function fetchPolicies() {
+      try {
+        const response = await fetch(`${API}/`);
+        const data = await response.json();
+        if (response.ok) {
+          setPolicies(data.policies ?? []);
+        } else {
+          console.error("Failed to fetch policies:", data.detail);
+        }
+      } catch (error) {
+        console.error("Could not fetch policies:", error);
+      }
+    }
+    fetchPolicies();
   }, []);
 
   async function loadPolicy(name: string) {
@@ -32,23 +45,32 @@ export default function PoliciesPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Company Policies</h1>
-      <div className="flex gap-6">
-        <div className="w-48 shrink-0 space-y-2">
+      <h1 className="text-2xl font-bold text-slate-800 mb-6">Company Policies</h1>
+      <div className="flex gap-5">
+        <div className="w-48 shrink-0 space-y-1.5">
           {policies.map((p) => (
-            <button key={p} onClick={() => loadPolicy(p)} className={`w-full text-left text-sm px-4 py-2 rounded-lg transition ${selected === p ? "bg-purple-600 text-white font-semibold" : "bg-white border text-gray-700 hover:bg-purple-50"}`}>
+            <button
+              key={p}
+              onClick={() => loadPolicy(p)}
+              className={`w-full text-left text-sm px-4 py-2.5 rounded-xl transition font-medium ${
+                selected === p
+                  ? "text-white shadow-sm"
+                  : "bg-white border border-slate-100 text-slate-600 hover:bg-orange-50 hover:text-orange-500 hover:border-orange-100"
+              }`}
+              style={selected === p ? { background: "#fb923c" } : {}}
+            >
               {POLICY_LABELS[p] ?? p}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 bg-white rounded-xl shadow p-6 min-h-[300px]">
-          {!selected && <p className="text-gray-400 text-sm">Select a policy from the left to view its contents.</p>}
-          {selected && loading && <p className="text-gray-400 text-sm animate-pulse">Loading policy...</p>}
+        <div className="card-accent-orange flex-1 bg-white rounded-2xl border border-slate-100 shadow-sm p-6 min-h-[300px]">
+          {!selected && <p className="text-slate-300 text-sm">Select a policy from the left.</p>}
+          {selected && loading && <p className="text-slate-400 text-sm animate-pulse">Loading...</p>}
           {selected && !loading && (
             <>
-              <h2 className="text-lg font-semibold text-purple-700 mb-3">{POLICY_LABELS[selected] ?? selected}</h2>
-              <p className="text-gray-700 text-sm leading-relaxed">{content}</p>
+              <h2 className="text-base font-semibold text-orange-500 mb-3">{POLICY_LABELS[selected] ?? selected}</h2>
+              <p className="text-slate-600 text-sm leading-relaxed">{content}</p>
             </>
           )}
         </div>

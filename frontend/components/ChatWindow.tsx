@@ -11,7 +11,7 @@ interface ChatWindowProps {
   apiBase?: string;
 }
 
-export default function ChatWindow({ employeeId, apiBase = "http://localhost:8000/api" }: ChatWindowProps) {
+export default function ChatWindow({ employeeId, apiBase = process.env.NEXT_PUBLIC_API_URL + "/api" }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,30 +27,38 @@ export default function ChatWindow({ employeeId, apiBase = "http://localhost:800
     setMessages((p) => [...p, { role: "user", text: msg }]);
     setInput("");
     setLoading(true);
-    const res = await fetch(`${apiBase}/chat`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ employee_id: employeeId, message: msg }),
-    });
-    const data = await res.json();
-    setMessages((p) => [...p, { role: "assistant", text: res.ok ? data.reply : data.detail }]);
+    
+    try {
+      const res = await fetch(`${apiBase}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employee_id: employeeId, message: msg }),
+      });
+      const data = await res.json();
+      const reply = res.ok ? data.reply : (data.detail ?? "An error occurred.");
+      setMessages((p) => [...p, { role: "assistant", text: reply }]);
+    } catch (error) {
+      setMessages((p) => [...p, { role: "assistant", text: "Could not reach the backend." }]);
+    }
+    
     setLoading(false);
   }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto space-y-2 p-3 border rounded-lg bg-white">
+      <div className="flex-1 overflow-y-auto space-y-2 p-3 border border-slate-100 rounded-2xl bg-white">
         {messages.map((m, i) => (
-          <div key={i} className={`p-2 rounded text-sm ${m.role === "user" ? "bg-blue-100 text-right" : "bg-gray-100"}`}>
+          <div key={i} className={`p-2 rounded-xl text-sm ${m.role === "user" ? "text-right" : "bg-slate-100 text-slate-700"}`}
+            style={m.role === "user" ? { background: "#22d3ee", color: "#0f172a" } : {}}>
             <strong>{m.role === "user" ? "You" : "HR Agent"}:</strong> {m.text}
           </div>
         ))}
-        {loading && <div className="text-xs text-gray-400 animate-pulse">Agent is thinking...</div>}
+        {loading && <div className="text-xs text-slate-300 animate-pulse">Agent is thinking...</div>}
         <div ref={bottomRef} />
       </div>
       <div className="flex gap-2 mt-2">
-        <input className="flex-1 border rounded px-3 py-2 text-sm" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Type a message..." />
-        <button onClick={send} className="bg-blue-600 text-white px-4 py-2 rounded text-sm">Send</button>
+        <input className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-300" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder="Type a message..." />
+        <button onClick={send} className="text-slate-900 px-4 py-2 rounded-xl text-sm font-semibold transition" style={{ background: "#22d3ee" }}>Send</button>
       </div>
     </div>
   );
