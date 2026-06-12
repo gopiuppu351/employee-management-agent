@@ -56,6 +56,7 @@ jobs:
           node-version: "20"
 
       - name: Run Claude Code Review
+        id: claude
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -193,3 +194,16 @@ jobs:
           echo "Waiting 10s for Claude to finish posting PR comment..."
           sleep 10
           node .github/scripts/create-issues.js
+
+      - name: Track Usage Metrics and Cost (Req 3)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
+          CLAUDE_MODEL: "claude-haiku-4-5-20251001"
+          INPUT_TOKENS: ${{ steps.claude.outputs.input_tokens || '0' }}
+          OUTPUT_TOKENS: ${{ steps.claude.outputs.output_tokens || '0' }}
+          REVIEW_TIMESTAMP: ${{ github.event.pull_request.updated_at || github.event.comment.created_at }}
+          FINDINGS_COUNT: ${{ steps.claude.outputs.num_turns || '0' }}
+        run: |
+          node .github/scripts/post-metrics.js
