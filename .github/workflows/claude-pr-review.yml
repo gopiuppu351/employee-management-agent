@@ -15,12 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    # Safety filter — prevents infinite loop:
-    # Runs on pull_request ONLY when pushed by a human (not Claude bot commits)
-    # Runs on issue_comment ONLY when:
-    #   - Comment is on a PR (not a regular issue)
-    #   - Comment contains @claude
-    #   - Comment author is NOT a bot
+    # Prevent infinite loops: only run for human actors.
+    # For comments: only on PRs, and only when @claude is mentioned.
     if: |
       (
         github.event_name == 'pull_request' &&
@@ -38,7 +34,7 @@ jobs:
       )
 
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
       id-token: write
@@ -48,151 +44,43 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Measure PR diff size for token estimation (Req 3)
-        id: diff
-        run: |
-          DIFF_CHARS=$(git diff origin/main...HEAD 2>/dev/null | wc -c || echo "0")
-          FILES_CHANGED=$(git diff origin/main...HEAD --name-only 2>/dev/null | wc -l || echo "0")
-          echo "diff_chars=$DIFF_CHARS" >> $GITHUB_OUTPUT
-          echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
-          echo "Diff size: $DIFF_CHARS chars across $FILES_CHANGED files"
 
       - name: Run Claude Code Review
         id: claude
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          model: claude-haiku-4-5-20251001
-          direct_prompt: |
-            You are a senior code reviewer. Review this PR and output findings as a JSON array ONLY.
-            No narrative text — only the JSON array.
+          use_sticky_comment: true
+          claude_args: |
+            --model claude-haiku-4-5-20251001
+            --max-turns 15
+          prompt: |
+            You are a senior code reviewer. Review this PR and report only real,
+            actionable findings in these categories:
 
-            ── EXISTING CATEGORIES (always check) ──────────────────────────────
-            1. Security vulnerabilities
-               - Hardcoded credentials, exposed secrets, passwords in code
-               - Environment variables missing for sensitive values
-               - Data exposure risks visible to unauthorized users
+            1. Security: hardcoded credentials, exposed secrets, XSS/CSRF risks,
+               sensitive data logged or rendered without validation
+            2. Access control: missing auth/role checks, endpoints or data
+               accessible without authorization
+            3. Validation: required fields missing, unsanitized user input,
+               missing error/loading states, no failure feedback on submissions
+            4. Logic bugs: incorrect conditionals, missing error handling in
+               async code, state management bugs
+            5. Type safety: use of "any", missing return types, untyped props,
+               type assertions instead of proper typing
+            6. Code quality: functions over 50 lines, duplicate logic, dead code,
+               deeply nested conditionals, magic numbers, inconsistent
+               error-handling patterns
+            7. Edge cases: missing null/undefined checks, no empty-array guards,
+               unchecked API response fields, timezone-naive date comparisons
 
-            2. Access control issues
-               - Bypassed authentication, wrong requester IDs
-               - Missing role checks before sensitive operations
-               - Endpoints or data accessible without proper authorization
+            Do NOT report: style/formatting preferences, naming suggestions,
+            comment quality, or minor refactors with no functional impact.
 
-            3. Missing form validations
-               - Required fields without required attribute
-               - No input length limits or format checks
-               - User input passed to API without sanitization
-
-            4. Logic bugs that break functionality
-               - Incorrect conditional logic or wrong comparisons
-               - Missing error handling in async operations
-               - State management issues causing incorrect UI behavior
-
-            ── NEW CATEGORIES (Requirement 1 — Extended CI Coverage) ──────────
-            5. Code quality and maintainability
-               - Functions longer than 50 lines doing too many things
-               - Duplicate logic that should be extracted into a shared utility
-               - Dead code — variables declared but never used, unreachable blocks
-               - Deeply nested conditionals (more than 3 levels) that reduce readability
-
-            6. Static type checking
-               - Use of "any" type that bypasses TypeScript safety
-               - Missing return types on functions that return values
-               - Props passed without proper TypeScript interface definitions
-               - Type assertions (as SomeType) used instead of proper typing
-
-            7. Integration test validation
-               - New API calls added with no corresponding error handling for failure cases
-               - Missing loading and error states for async data fetching
-               - Form submissions with no success or failure feedback to the user
-               - Component side effects with no cleanup (missing useEffect return)
-
-            8. Security best practices and vulnerability checks
-               - XSS risks — user input rendered without sanitization
-               - CSRF risks — state-changing operations without protection
-               - Sensitive data logged to console (console.log with passwords, tokens, IDs)
-               - API responses rendered directly without validation
-
-            9. Coding standards enforcement
-               - Inconsistent error handling patterns (some try/catch, some .catch, some none)
-               - Mixed async patterns (callbacks mixed with async/await in same codebase)
-               - Constants defined inline instead of as named constants
-               - Magic numbers or strings used directly instead of named values
-
-            10. Edge case handling
-                - No null/undefined checks before accessing object properties
-                - Array operations with no empty array guard
-                - Date comparisons with no timezone consideration
-                - API response fields accessed without checking if they exist
-
-            ── DO NOT REPORT ────────────────────────────────────────────────────
-            - Code style or formatting preferences
-            - Variable or function naming suggestions
-            - Comment or documentation quality
-            - Code organization opinions
-            - Minor refactoring suggestions with no functional impact
-
-            ── OUTPUT FORMAT ────────────────────────────────────────────────────
-            For each finding output this exact JSON structure:
-            [
-              {
-                "file": "relative/path/to/file.tsx",
-                "line": 42,
-                "category": "code-quality",
-                "severity": "critical",
-                "issue": "Short description of the problem",
-                "reasoning": "One sentence explaining why this is a real issue not a false positive",
-                "fix": "Specific actionable suggestion on exactly what to change"
-              }
-            ]
-
-            Category values:
-            - "security"         → categories 1 and 8
-            - "access-control"   → category 2
-            - "validation"       → categories 3 and 7
-            - "logic-bug"        → category 4
-            - "code-quality"     → categories 5 and 9
-            - "type-safety"      → category 6
-            - "edge-case"        → category 10
-
-            Severity levels:
-            - "critical" → security vulnerability or data exposure
-            - "high"     → access control bypass, broken auth, XSS/CSRF risk
-            - "medium"   → missing validation, logic bug, type safety issue
-            - "low"      → code quality, edge case, standards violation
-
-            If no issues found, output: []
-
-            If triggered by a comment containing "@claude implement" or "@claude fix",
-            apply the recommended fixes directly to the codebase and commit the changes
-            to the PR branch automatically.
-
-      - name: Deduplicate findings (Q5 — No Repeat Findings)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
-        run: |
-          if [ -f claude-findings.json ]; then
-            node .github/scripts/deduplicate-findings.js
-          else
-            echo "[]" > deduplicated-findings.json
-          fi
-      - name: Re-checkout main for scripts
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          token: ${{ secrets.GITHUB_TOKEN }}
-          clean: false
-
+            For each finding, give: file, line, severity (critical/high/medium/low),
+            a one-line issue description, and a specific fix suggestion.
+            Post your review as inline comments where possible, with a summary
+            comment. If there are no issues, say so briefly.
       - name: Create GitHub Issues (Req 2 — Track Findings as Issues)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -204,20 +92,44 @@ jobs:
           sleep 10
           node .github/scripts/create-issues.js
 
-      - name: Track Usage Metrics and Cost (Req 3)
+      - name: Post usage and cost to PR
+        if: always() && steps.claude.outputs.execution_file != ''
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
-          CLAUDE_MODEL: "claude-haiku-4-5-20251001"
-          INPUT_TOKENS: ${{ steps.claude.outputs.input_tokens || '0' }}
-          OUTPUT_TOKENS: ${{ steps.claude.outputs.output_tokens || '0' }}
-          REVIEW_TIMESTAMP: ${{ github.event.pull_request.updated_at || github.event.comment.created_at }}
-          FINDINGS_COUNT: ${{ steps.claude.outputs.num_turns || '0' }}
-          DIFF_CHARS: ${{ steps.diff.outputs.diff_chars || '0' }}
-          FILES_CHANGED: ${{ steps.diff.outputs.files_changed || '0' }}
-          PROMPT_CHARS: "2500"
         run: |
-          echo "Waiting 30s for Claude to finish posting findings comment..."
-          sleep 30
-          node .github/scripts/post-metrics.js
+          FILE="${{ steps.claude.outputs.execution_file }}"
+
+          RESULT=$(jq '[.[] | select(.type=="result")] | last' "$FILE")
+          if [ "$RESULT" = "null" ] || [ -z "$RESULT" ]; then
+            echo "No result entry found in execution file, skipping."
+            exit 0
+          fi
+
+          INPUT=$(echo "$RESULT"        | jq -r '.usage.input_tokens // 0')
+          OUTPUT=$(echo "$RESULT"       | jq -r '.usage.output_tokens // 0')
+          CACHE_READ=$(echo "$RESULT"   | jq -r '.usage.cache_read_input_tokens // 0')
+          CACHE_WRITE=$(echo "$RESULT"  | jq -r '.usage.cache_creation_input_tokens // 0')
+          COST=$(echo "$RESULT"         | jq -r '.total_cost_usd // 0')
+          DURATION=$(echo "$RESULT"     | jq -r '.duration_ms // 0')
+          TURNS=$(echo "$RESULT"        | jq -r '.num_turns // 0')
+
+          BODY=$(cat <<EOF
+          ### 🤖 Claude Review — Usage & Cost
+          | Metric | Value |
+          |---|---|
+          | Model | claude-haiku-4-5 |
+          | Input tokens | $INPUT |
+          | Output tokens | $OUTPUT |
+          | Cache read tokens | $CACHE_READ |
+          | Cache write tokens | $CACHE_WRITE |
+          | Turns | $TURNS |
+          | Duration | $((DURATION / 1000))s |
+          | **Cost** | **\$$COST** |
+          EOF
+          )
+
+          gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+
+          # Also show in the Actions run summary (free monitoring across runs)
+          echo "$BODY" >> "$GITHUB_STEP_SUMMARY"
