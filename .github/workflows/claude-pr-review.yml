@@ -218,4 +218,6 @@ jobs:
           FILES_CHANGED: ${{ steps.diff.outputs.files_changed || '0' }}
           PROMPT_CHARS: "2500"
         run: |
+          echo "Waiting 30s for Claude to finish posting findings comment..."
+          sleep 30
           node .github/scripts/post-metrics.js

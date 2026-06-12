@@ -48,16 +48,17 @@ async function fetchPRDataFromAPI() {
   if (commentsResult.status === 200 && Array.isArray(commentsResult.data)) {
     for (const comment of commentsResult.data.reverse()) {
       const body = comment.body || "";
-      const jsonMatch = body.match(/\[[\s\S]*?\]/);
-      if (jsonMatch) {
-        try {
-          const parsed = JSON.parse(jsonMatch[0]);
-          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].file && parsed[0].severity) {
-            RESOLVED_FINDINGS = parsed.length;
-            console.log(`Fetched findings count from PR comment: ${RESOLVED_FINDINGS}`);
-            break;
-          }
-        } catch { /* skip */ }
+
+      // Count findings by matching "severity" occurrences in JSON
+      // More reliable than parsing the full JSON array
+      const severityMatches = body.match(/"severity"\s*:/g);
+      if (severityMatches && severityMatches.length > 0) {
+        // Also verify it looks like Claude findings (has "file" and "issue" fields)
+        if (body.includes('"file"') && body.includes('"issue"')) {
+          RESOLVED_FINDINGS = severityMatches.length;
+          console.log(`Fetched findings count from PR comment: ${RESOLVED_FINDINGS}`);
+          break;
+        }
       }
     }
   }
