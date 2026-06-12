@@ -21,32 +21,61 @@ const TIMESTAMP      = process.env.REVIEW_TIMESTAMP     || new Date().toISOStrin
 const FINDINGS_COUNT = parseInt(process.env.FINDINGS_COUNT || "0", 10);
 
 // Option A — Estimation inputs (from workflow diff measurement)
-const DIFF_CHARS     = parseInt(process.env.DIFF_CHARS    || "0", 10);
+let DIFF_CHARS     = parseInt(process.env.DIFF_CHARS    || "0", 10);
 const PROMPT_CHARS   = parseInt(process.env.PROMPT_CHARS  || "2500", 10);
-const FILES_CHANGED  = parseInt(process.env.FILES_CHANGED || "0", 10);
+let FILES_CHANGED  = parseInt(process.env.FILES_CHANGED || "0", 10);
+let RESOLVED_FINDINGS = parseInt(process.env.FINDINGS_COUNT || "0", 10);
+
+// ── Fetch PR data from GitHub API when diff is unavailable ───────────────────
+// Used when triggered by issue_comment — git diff returns 0
+async function fetchPRDataFromAPI() {
+  if (!GITHUB_TOKEN || !REPO || !PR_NUMBER) return;
+
+  const [owner, repo] = REPO.split("/");
+
+  // Fetch PR files changed
+  const filesResult = await githubRequest("GET", `/pulls/${PR_NUMBER}/files?per_page=100`);
+  if (filesResult.status === 200 && Array.isArray(filesResult.data)) {
+    FILES_CHANGED = filesResult.data.length;
+    DIFF_CHARS = filesResult.data.reduce((sum, f) => {
+      return sum + (f.additions || 0) * 50 + (f.deletions || 0) * 50;
+    }, 0);
+    console.log(`Fetched from GitHub API: ${FILES_CHANGED} files, ~${DIFF_CHARS} diff chars`);
+  }
+
+  // Fetch findings count from latest Claude PR comment
+  const commentsResult = await githubRequest("GET", `/issues/${PR_NUMBER}/comments?per_page=100`);
+  if (commentsResult.status === 200 && Array.isArray(commentsResult.data)) {
+    for (const comment of commentsResult.data.reverse()) {
+      const body = comment.body || "";
+      const jsonMatch = body.match(/\[[\s\S]*?\]/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].file && parsed[0].severity) {
+            RESOLVED_FINDINGS = parsed.length;
+            console.log(`Fetched findings count from PR comment: ${RESOLVED_FINDINGS}`);
+            break;
+          }
+        } catch { /* skip */ }
+      }
+    }
+  }
+}
 
 // ── Token estimation (Option A) ───────────────────────────────────────────────
-// Used when claude-code-action@beta does not expose real token counts
-// Rule: ~1 token per 4 characters (Claude tokenization approximation)
 function estimateTokens(diffChars, promptChars, findingsCount) {
-  // Input = PR diff + system prompt + direct_prompt instructions
-  const inputTokens = Math.round((diffChars + promptChars) / 4);
-
-  // Output = JSON findings (~150 tokens per finding on average)
-  // Each finding has: file, line, category, severity, issue, reasoning, fix
+  const inputTokens  = Math.round((diffChars + promptChars) / 4);
   const outputTokens = Math.round(findingsCount * 150);
-
   return { inputTokens, outputTokens, isEstimated: true };
 }
 
 // Determine whether to use real or estimated tokens
 function resolveTokens() {
   if (RAW_INPUT > 0 || RAW_OUTPUT > 0) {
-    // Real token counts available from claude-code-action
     return { inputTokens: RAW_INPUT, outputTokens: RAW_OUTPUT, isEstimated: false };
   }
-  // Fall back to estimation
-  return estimateTokens(DIFF_CHARS, PROMPT_CHARS, FINDINGS_COUNT);
+  return estimateTokens(DIFF_CHARS, PROMPT_CHARS, RESOLVED_FINDINGS);
 }
 
 // ── Pricing table (USD per 1M tokens) ────────────────────────────────────────
@@ -156,6 +185,12 @@ function buildComment(metrics) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function run() {
+  // If diff data is missing (triggered by issue_comment), fetch from GitHub API
+  if (DIFF_CHARS === 0 && FILES_CHANGED === 0) {
+    console.log("Diff data missing — fetching PR data from GitHub API...");
+    await fetchPRDataFromAPI();
+  }
+
   const { inputTokens, outputTokens, isEstimated } = resolveTokens();
   const totalTokens = inputTokens + outputTokens;
   const { inputCost, outputCost, totalCost } = calculateCost(inputTokens, outputTokens, MODEL);
@@ -169,7 +204,7 @@ async function run() {
     outputCost,
     totalCost,
     isEstimated,
-    findingsCount: FINDINGS_COUNT,
+    findingsCount: RESOLVED_FINDINGS,
     filesChanged:  FILES_CHANGED,
     timestamp:     TIMESTAMP,
     prNumber:      PR_NUMBER,
