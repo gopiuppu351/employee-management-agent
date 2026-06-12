@@ -41,33 +41,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (employeeId: string, password: string): Promise<boolean> => {
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ employee_id: employeeId, password }),
-      });
+    // Demo credentials — bypasses backend until /api/auth/login is implemented
+    const DEMO_USERS: Record<string, { name: string; role: string; password: string }> = {
+      "E001": { name: "Alice Johnson",  role: "employee", password: "password123" },
+      "E002": { name: "Bob Smith",      role: "employee", password: "password123" },
+      "E003": { name: "Carol Williams", role: "manager",  password: "password123" },
+      "M001": { name: "David Manager",  role: "manager",  password: "password123" },
+    };
 
-      const data = await response.json();
-      
-      if (response.ok && data.user) {
-        const userData: AuthUser = {
-          employeeId: data.user.employee_id,
-          name: data.user.name,
-          role: data.user.role,
-          isAuthenticated: true,
-        };
-        setUser(userData);
-        localStorage.setItem("auth_user", JSON.stringify(userData));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Login failed:", error);
-      return false;
+    const match = DEMO_USERS[employeeId.toUpperCase()];
+    if (match && match.password === password) {
+      const userData: AuthUser = {
+        employeeId: employeeId.toUpperCase(),
+        name:  match.name,
+        role:  match.role,
+        isAuthenticated: true,
+      };
+      setUser(userData);
+      localStorage.setItem("auth_user", JSON.stringify(userData));
+      return true;
     }
+    return false;
   };
 
   const logout = () => {

@@ -85,9 +85,32 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 pt-6 border-t border-slate-100">
-            <p className="text-xs text-slate-400 text-center">
-              For demo purposes, use any employee ID with password "admin123"
-            </p>
+            <p className="text-xs text-slate-500 font-medium text-center mb-3">Demo Credentials</p>
+            <div className="bg-slate-50 rounded-xl p-3 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Employee ID</span>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, employeeId: "E001" })}
+                  className="text-xs font-mono bg-white border border-slate-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  E001
+                </button>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-500">Password</span>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, password: "password123" })}
+                  className="text-xs font-mono bg-white border border-slate-200 text-blue-600 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  password123
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 text-center pt-1">
+                Click the values above to auto-fill
+              </p>
+            </div>
           </div>
         </div>
       </div>
